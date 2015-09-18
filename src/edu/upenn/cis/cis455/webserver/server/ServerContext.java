@@ -3,6 +3,7 @@ package edu.upenn.cis.cis455.webserver.server;
 import edu.upenn.cis.cis455.webserver.thread.ThreadPool;
 
 import java.net.InetAddress;
+import java.util.Map;
 
 /**
  * @author brishi
@@ -10,14 +11,18 @@ import java.net.InetAddress;
 public class ServerContext {
     private String rootPath;
     private int port;
-    private ThreadPool threadPool;
     private InetAddress address;
+    private int numWorkers = 50;
 
     // Defaults
     public ServerContext() {
         this.rootPath = "/home/cis455/www";
         this.port = 8080;
-        this.threadPool = new ThreadPool(100); // TODO: 100?
+    }
+
+    public ServerContext(Map<String, Object> args) {
+        this.port = (int) args.get("port");
+        this.rootPath = (String) args.get("rootPath");
     }
 
     public void setRootPath(String rootPath) {
@@ -31,12 +36,15 @@ public class ServerContext {
         this.port = port;
     }
 
-    public void setThreadPool(ThreadPool threadPool) {
-        this.threadPool = threadPool;
-    }
-
     public void setAddress(InetAddress address) {
         this.address = address;
+    }
+
+    public void setNumWorkers(int num) {
+        if (num > 200) {
+            throw new IllegalArgumentException("Too many workers.");
+        }
+        this.numWorkers = num;
     }
 
     public String getRootDirectory() {
@@ -47,11 +55,12 @@ public class ServerContext {
         return this.port;
     }
 
-    public ThreadPool getThreadPool() {
-        return this.threadPool;
-    }
-
     public InetAddress getAddress() {
         return this.address;
+    }
+
+    public int getNumWorkers() {
+        return this.numWorkers;
+
     }
 }

@@ -12,17 +12,19 @@ import java.net.Socket;
  */
 public class Server extends Thread {
     final Logger logger = Logger.getLogger(Server.class);
-    private boolean RUNNING;
+
     private ServerSocket serverSocket;
     private Socket clientSocket;
     private ThreadPool pool;
 
-    ServerContext context;
+    private boolean RUNNING;
+
+    private ServerContext context;
 
     public Server(ServerContext context) {
         this.context = context;
 
-        this.pool = context.getThreadPool();
+        this.pool = new ThreadPool(context.getNumWorkers());
     }
 
     @Override
@@ -38,8 +40,10 @@ public class Server extends Thread {
                 this.pool.addRequestSocket(clientSocket);
             }
 
+            serverSocket.close();
         } catch (IOException e) {
             logger.debug("IOException thrown by sockets. Error: " + e.getMessage());
+
         } catch (InterruptedException e) {
             logger.debug("InterruptedException thrown by thread pool. Error: " + e.getMessage());
         }

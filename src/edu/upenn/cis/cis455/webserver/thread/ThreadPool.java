@@ -31,7 +31,7 @@ public class ThreadPool {
 
     }
 
-    public void addRequestSocket(Socket clientSocket) throws InterruptedException {
+    public synchronized void addRequestSocket(Socket clientSocket) throws InterruptedException {
         this.blockingQueue.enqueue(clientSocket);
     }
 }
