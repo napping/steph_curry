@@ -14,7 +14,7 @@ public class ServerContext {
     public ServerContext() {
         this.rootPath = "/home/cis455/www";
         this.port = 8080;
-        this.threadPool = new ThreadPool();
+        this.threadPool = new ThreadPool(100); // TODO: 100?
     }
 
     public void setRootPath(String rootPath) {

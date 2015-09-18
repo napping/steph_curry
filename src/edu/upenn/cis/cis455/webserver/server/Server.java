@@ -3,13 +3,14 @@ package edu.upenn.cis.cis455.webserver.server;
 /**
  * @author brishi
  */
-public class Server {
+public class Server extends Thread {
 
     public Server(ServerContext context) {
 
     }
 
-    public void startServer() {
-
+    @Override
+    public void run() {
     }
+
 }
