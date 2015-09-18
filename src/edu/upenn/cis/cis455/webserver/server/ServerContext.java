@@ -1,6 +1,8 @@
 package edu.upenn.cis.cis455.webserver.server;
 
-import edu.upenn.cis.cis455.webserver.threadpool.ThreadPool;
+import edu.upenn.cis.cis455.webserver.thread.ThreadPool;
+
+import java.net.InetAddress;
 
 /**
  * @author brishi
@@ -9,6 +11,7 @@ public class ServerContext {
     private String rootPath;
     private int port;
     private ThreadPool threadPool;
+    private InetAddress address;
 
     // Defaults
     public ServerContext() {
@@ -32,6 +35,10 @@ public class ServerContext {
         this.threadPool = threadPool;
     }
 
+    public void setAddress(InetAddress address) {
+        this.address = address;
+    }
+
     public String getRootDirectory() {
         return this.rootPath;
     }
@@ -40,8 +47,11 @@ public class ServerContext {
         return this.port;
     }
 
-    public ThreadPool getThreadPoor() {
+    public ThreadPool getThreadPool() {
         return this.threadPool;
     }
 
+    public InetAddress getAddress() {
+        return this.address;
+    }
 }
