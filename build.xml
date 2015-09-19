@@ -7,7 +7,7 @@
     <property name="build.target.dir" location="${project.root}${file.separator}bin"/>
     <property name="web-inf.dir" location="${build.target.dir}${file.separator}"/>
     <property name="classes.dir"     location="${web-inf.dir}${file.separator}"/>
-    <property name="web-inf.lib.dir" location="${web-inf.dir}${file.separator}lib"/>
+    <property name="web-inf.lib.dir" location="${web-inf.dir}${file.separator}"/>
     <property name="test-classes.dir" location="${build.target.dir}${file.separator}test${file.separator}classes"/>
     <property name="test-lib.dir"     location="${build.target.dir}${file.separator}test${file.separator}lib"/>
     <property name="src.main.dir"  location="${build.dir}${file.separator}src${file.separator}"/>

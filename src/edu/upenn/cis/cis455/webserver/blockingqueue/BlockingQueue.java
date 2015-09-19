@@ -47,4 +47,11 @@ public class BlockingQueue {
         }
     }
 
+    public synchronized boolean isEmpty() {
+        return queue.size() == 0;
+    }
+
+    public synchronized int getSize() {
+        return queue.size();
+    }
 }

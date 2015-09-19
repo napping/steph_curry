@@ -2,12 +2,11 @@ package edu.upenn.cis.cis455.webserver;
 
 import edu.upenn.cis.cis455.webserver.server.Server;
 import edu.upenn.cis.cis455.webserver.server.ServerContext;
-import org.apache.log4j.Logger;
 
 class HttpServer {
 
     public static void main(String args[]) {
-        System.out.println("Starting HTTP server. jajajajajaja");
+        System.out.println("Starting HTTP server.");
 
         if (args.length < 2) {
             System.out.println("Brian Shi - brishi");
@@ -19,8 +18,8 @@ class HttpServer {
             context.setRootPath(args[1]);
             context.setNumWorkers(32);
 
-            Server server = new Server(context);
-            server.start();
+            Thread serverThread = new Thread(new Server(context));
+            serverThread.start();
 
         } catch (Exception e) {
             // TODO Handle

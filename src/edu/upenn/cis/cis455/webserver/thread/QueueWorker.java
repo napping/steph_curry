@@ -22,17 +22,22 @@ public class QueueWorker extends Thread {
         this.RUNNING = true;
     }
 
-    public void start() {
+    @Override
+    public void run() {
+        while (this.RUNNING) {
+            try {
+                if (!queue.isEmpty()) {
+                    Socket request = (Socket) queue.deqeue();
+                    this.handleRequest(request);
+                    request.close();
+                }
 
-        while (this.RUNNING) try {
-            Socket request = (Socket) queue.deqeue();
-            this.handleRequest(request);
+            } catch (InterruptedException e) {
+                logger.debug("InterruptedException thrown by worker. Error: " + e.getMessage());
 
-            request.close();
-        } catch (InterruptedException e) {
-            logger.debug("InterruptedException thrown by worker. Error: " + e.getMessage());
-        } catch (IOException e) {
-            logger.debug("IOException thrown by worker. Error: " + e.getMessage());
+            } catch (IOException e) {
+                logger.debug("IOException thrown by worker. Error: " + e.getMessage());
+            }
         }
     }
 

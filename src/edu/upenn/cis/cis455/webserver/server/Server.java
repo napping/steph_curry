@@ -10,7 +10,7 @@ import java.net.Socket;
 /**
  * @author brishi
  */
-public class Server extends Thread {
+public class Server implements Runnable {
     final Logger logger = Logger.getLogger(Server.class);
 
     private ServerSocket serverSocket;
@@ -24,11 +24,14 @@ public class Server extends Thread {
     public Server(ServerContext context) {
         this.context = context;
 
+        logger.debug("Server instantiated.");
         this.pool = new ThreadPool(context.getNumWorkers());
     }
 
     @Override
     public void run() {
+        logger.debug("Running server");
+        System.out.println("_______________");
         this.RUNNING = true;
         try {
             serverSocket = new ServerSocket(this.context.getPort());
