@@ -1,9 +1,6 @@
 package edu.upenn.cis.cis455.webserver.server;
 
-import edu.upenn.cis.cis455.webserver.thread.ThreadPool;
-
 import java.net.InetAddress;
-import java.util.Map;
 
 /**
  * @author brishi
@@ -18,11 +15,6 @@ public class ServerContext {
     public ServerContext() {
         this.rootPath = "/home/cis455/www";
         this.port = 8080;
-    }
-
-    public ServerContext(Map<String, Object> args) {
-        this.port = (int) args.get("port");
-        this.rootPath = (String) args.get("rootPath");
     }
 
     public void setRootPath(String rootPath) {
@@ -42,7 +34,7 @@ public class ServerContext {
 
     public void setNumWorkers(int num) {
         if (num > 200) {
-            throw new IllegalArgumentException("Too many workers.");
+            throw new IllegalArgumentException("Too many workers provided to ServerContext.");
         }
         this.numWorkers = num;
     }

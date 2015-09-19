@@ -41,6 +41,7 @@ public class Server extends Thread {
             }
 
             serverSocket.close();
+
         } catch (IOException e) {
             logger.debug("IOException thrown by sockets. Error: " + e.getMessage());
 
