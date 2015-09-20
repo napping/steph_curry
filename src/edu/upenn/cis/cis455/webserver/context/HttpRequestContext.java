@@ -21,6 +21,30 @@ public class HttpRequestContext {
         httpVersion = HttpVersion.v11;
     }
 
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("Printing out HttpRequestContext...\n");
+        sb.append("Request: ");
+        sb.append(request);
+        sb.append("\n");
+        sb.append("Header: ");
+        sb.append(header);
+        sb.append("\n");
+        sb.append("Content Type: ");
+        sb.append(contentType);
+        sb.append("\n");
+        sb.append("Special URL Type: ");
+        sb.append(specialUrlType);
+        sb.append("\n");
+        sb.append("HTTP Version: ");
+        sb.append(httpVersion);
+        sb.append("\n");
+        sb.append("\n");
+
+        return sb.toString();
+    }
+
     /******************************** GETTERS ******************************/
     public String getRequest() {
         return request;
@@ -62,5 +86,4 @@ public class HttpRequestContext {
     public void setHttpVersion(HttpVersion httpVersion) {
         this.httpVersion = httpVersion;
     }
-
 }

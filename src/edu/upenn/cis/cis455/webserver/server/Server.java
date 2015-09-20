@@ -25,7 +25,6 @@ public class Server implements Runnable {
     public Server(ServerContext context) {
         this.context = context;
 
-        logger.debug("Server instantiated.");
         this.pool = new ThreadPool(context.getNumWorkers());
     }
 

@@ -3,6 +3,9 @@ package edu.upenn.cis.cis455.webserver.thread;
 import edu.upenn.cis.cis455.webserver.blockingqueue.BlockingQueue;
 import edu.upenn.cis.cis455.webserver.context.HttpRequestContext;
 import edu.upenn.cis.cis455.webserver.context.HttpResponseContext;
+import edu.upenn.cis.cis455.webserver.exception.InvalidHttpRequestException;
+import edu.upenn.cis.cis455.webserver.exception.InvalidHttpVersionException;
+import edu.upenn.cis.cis455.webserver.exception.UnsupportedHttpMethodException;
 import edu.upenn.cis.cis455.webserver.utils.Parser;
 import org.apache.log4j.Logger;
 
@@ -46,8 +49,16 @@ public class QueueWorker implements Runnable {
         BufferedReader requestReader = new BufferedReader(
                 new InputStreamReader(request.getInputStream()));
 
-        HttpRequestContext requestContext = Parser.parseIntoContext(
-                requestReader);
+        try {
+            HttpRequestContext requestContext = Parser.parseIntoContext(
+                    requestReader);
+        } catch (InvalidHttpVersionException e) {
+            e.printStackTrace();
+        } catch (InvalidHttpRequestException e) {
+            e.printStackTrace();
+        } catch (UnsupportedHttpMethodException e) {
+            e.printStackTrace();
+        }
 
         logger.debug("Done with handling request.");
     }
