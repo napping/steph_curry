@@ -10,28 +10,27 @@ import java.net.Socket;
 public class ThreadPool {
 
     private BlockingQueue blockingQueue;
-    private Thread[] workers;
+    private Thread[] workerThreads;
 
     private int numWorkers;
 
     public ThreadPool(int numWorkers) {
-        this.blockingQueue = new BlockingQueue();
-        this.workers = new QueueWorker[numWorkers];
+        this.blockingQueue = new BlockingQueue<Socket>();
+        this.workerThreads = new Thread[numWorkers];
 
         this.numWorkers = numWorkers;
         this.startWorkerThreads();
     }
 
-    private synchronized void startWorkerThreads() {
-
+    private void startWorkerThreads() {
         for (int i = 0; i < this.numWorkers; i++) {
-            this.workers[i] = new QueueWorker(this.blockingQueue);
-            this.workers[i].start();
+            this.workerThreads[i] = new Thread(new QueueWorker(this.blockingQueue));
+            this.workerThreads[i].start();
         }
 
     }
 
-    public synchronized void addRequestSocket(Socket clientSocket) throws InterruptedException {
+    public void addRequestSocket(Socket clientSocket) throws InterruptedException {
         this.blockingQueue.enqueue(clientSocket);
     }
 }

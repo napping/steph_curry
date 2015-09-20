@@ -9,7 +9,7 @@ public class ServerContext {
     private String rootPath;
     private int port;
     private InetAddress address;
-    private int numWorkers = 50;
+    private int numWorkers = 5;
 
     // Defaults
     public ServerContext() {

@@ -6,8 +6,8 @@ import java.util.List;
 /**
  * @author brishi
  */
-public class BlockingQueue {
-    private final List queue;
+public class BlockingQueue<K> {
+    private final List<K> queue;
     int maxSize = 64;
 
     public BlockingQueue() {
@@ -19,36 +19,50 @@ public class BlockingQueue {
         this.maxSize = maxSize;
     }
 
-    public synchronized void enqueue(Object elt) throws InterruptedException {
+    public synchronized void enqueue(K elt) throws InterruptedException {
         while (queue.size() >= this.maxSize) {
-            synchronized (queue) {
-                System.out.println("Queue is now full!");
-                queue.wait();
-            }
+            System.out.print("Q is full! ");
+            this.wait();
         }
 
-        synchronized (queue) {
-            queue.add(elt);
-            queue.notifyAll();
+        boolean notify = false;
+        if (this.isEmpty()) {
+            notify = true;
+        }
+
+        queue.add(elt);
+
+        if (notify) {
+            this.notifyAll();
         }
     }
 
-    public synchronized Object deqeue() throws InterruptedException {
+    public synchronized K deqeue() throws InterruptedException {
         while (queue.isEmpty()) {
-            synchronized (queue) {
-                System.out.println("Queue is now empty.");
-                queue.wait();
-            }
+            System.out.print("Q is empty. ");
+            this.wait();
         }
 
-        synchronized (queue) {
-            queue.notifyAll();
-            return queue.remove(0);
+        boolean notify = false;
+        if (this.isFull()) {
+            notify = true;
         }
+
+        K head = queue.remove(0);
+
+        if (notify) {
+            this.notifyAll();
+        }
+
+        return head;
     }
 
     public synchronized boolean isEmpty() {
         return queue.size() == 0;
+    }
+
+    public synchronized boolean isFull() {
+        return queue.size() == this.maxSize;
     }
 
     public synchronized int getSize() {

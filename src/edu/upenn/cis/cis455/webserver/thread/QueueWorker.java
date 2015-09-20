@@ -11,10 +11,10 @@ import java.net.Socket;
 /**
  * @author brishi
  */
-public class QueueWorker extends Thread {
+public class QueueWorker implements Runnable {
     final Logger logger = Logger.getLogger(QueueWorker.class);
 
-    private BlockingQueue queue;
+    private BlockingQueue<Socket> queue;
     private boolean RUNNING;
 
     public QueueWorker(BlockingQueue queue) {
@@ -26,11 +26,9 @@ public class QueueWorker extends Thread {
     public void run() {
         while (this.RUNNING) {
             try {
-                if (!queue.isEmpty()) {
-                    Socket request = (Socket) queue.deqeue();
-                    this.handleRequest(request);
-                    request.close();
-                }
+                Socket request = queue.deqeue();
+                this.handleRequest(request);
+                // request.close();
 
             } catch (InterruptedException e) {
                 logger.debug("InterruptedException thrown by worker. Error: " + e.getMessage());
@@ -49,5 +47,6 @@ public class QueueWorker extends Thread {
             System.out.println(line);
         }
 
+        logger.debug("Done with handling request.");
     }
 }

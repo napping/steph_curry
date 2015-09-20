@@ -39,6 +39,7 @@ public class Server implements Runnable {
 
             while (RUNNING) {
                 clientSocket = serverSocket.accept();
+                logger.debug("Received request socket.");
 
                 this.pool.addRequestSocket(clientSocket);
             }

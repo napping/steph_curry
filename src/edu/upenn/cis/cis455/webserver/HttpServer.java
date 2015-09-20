@@ -16,7 +16,7 @@ class HttpServer {
             ServerContext context = new ServerContext();
             context.setPort(Integer.parseInt(args[0]));
             context.setRootPath(args[1]);
-            context.setNumWorkers(32);
+            // context.setNumWorkers(32);  Defaults to 5
 
             Thread serverThread = new Thread(new Server(context));
             serverThread.start();
