@@ -10,13 +10,13 @@ import java.net.Socket;
 public class ThreadPool {
 
     private BlockingQueue blockingQueue;
-    private Thread[] workerThreads;
+    private Thread[] workers;
 
     private int numWorkers;
 
     public ThreadPool(int numWorkers) {
         this.blockingQueue = new BlockingQueue<Socket>();
-        this.workerThreads = new Thread[numWorkers];
+        this.workers = new Thread[numWorkers];
 
         this.numWorkers = numWorkers;
         this.startWorkerThreads();
@@ -24,9 +24,10 @@ public class ThreadPool {
 
     private void startWorkerThreads() {
         for (int i = 0; i < this.numWorkers; i++) {
-            this.workerThreads[i] = new Thread(
+            this.workers[i] = new Thread(
                     new QueueWorker(this.blockingQueue));
-            this.workerThreads[i].start();
+
+            this.workers[i].start();
         }
 
     }

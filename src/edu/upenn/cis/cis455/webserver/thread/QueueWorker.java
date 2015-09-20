@@ -3,6 +3,7 @@ package edu.upenn.cis.cis455.webserver.thread;
 import edu.upenn.cis.cis455.webserver.blockingqueue.BlockingQueue;
 import edu.upenn.cis.cis455.webserver.context.HttpRequestContext;
 import edu.upenn.cis.cis455.webserver.context.HttpResponseContext;
+import edu.upenn.cis.cis455.webserver.utils.Parser;
 import org.apache.log4j.Logger;
 
 import java.io.*;
@@ -45,20 +46,10 @@ public class QueueWorker implements Runnable {
         BufferedReader requestReader = new BufferedReader(
                 new InputStreamReader(request.getInputStream()));
 
-        HttpRequestContext requestContext = new HttpRequestContext();
-        parseRequestIntoContext(requestReader, requestContext);
+        HttpRequestContext requestContext = Parser.parseIntoContext(
+                requestReader);
 
         logger.debug("Done with handling request.");
     }
 
-    private void parseRequestIntoContext(
-            BufferedReader reader, HttpRequestContext requestContext)
-            throws IOException {
-
-        String line;
-        while ((line = reader.readLine()) != null) {
-            System.out.println(line);
-        }
-
-    }
 }
