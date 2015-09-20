@@ -26,7 +26,7 @@ public class QueueWorker implements Runnable {
     public void run() {
         while (this.RUNNING) {
             try {
-                Socket request = queue.deqeue();
+                Socket request = queue.dequeue();
                 this.handleRequest(request);
                 // request.close();
 

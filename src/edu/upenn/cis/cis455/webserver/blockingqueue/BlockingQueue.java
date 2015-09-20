@@ -37,7 +37,7 @@ public class BlockingQueue<K> {
         }
     }
 
-    public synchronized K deqeue() throws InterruptedException {
+    public synchronized K dequeue() throws InterruptedException {
         while (queue.isEmpty()) {
             System.out.print("Q is empty. ");
             this.wait();
