@@ -1,7 +1,7 @@
 package edu.upenn.cis.cis455.webserver;
 
 import edu.upenn.cis.cis455.webserver.server.Server;
-import edu.upenn.cis.cis455.webserver.server.ServerContext;
+import edu.upenn.cis.cis455.webserver.context.ServerContext;
 
 class HttpServer {
 

@@ -1,5 +1,6 @@
 package edu.upenn.cis.cis455.webserver.server;
 
+import edu.upenn.cis.cis455.webserver.context.ServerContext;
 import edu.upenn.cis.cis455.webserver.thread.ThreadPool;
 import org.apache.log4j.Logger;
 
@@ -30,9 +31,9 @@ public class Server implements Runnable {
 
     @Override
     public void run() {
-        logger.debug("Running server");
-        System.out.println("_______________");
+        logger.debug("Running server...");
         this.RUNNING = true;
+
         try {
             serverSocket = new ServerSocket(this.context.getPort());
             context.setAddress(serverSocket.getInetAddress());
@@ -47,10 +48,12 @@ public class Server implements Runnable {
             serverSocket.close();
 
         } catch (IOException e) {
-            logger.debug("IOException thrown by sockets. Error: " + e.getMessage());
+            logger.debug("IOException thrown by sockets. " +
+                    "Error: " + e.getMessage());
 
         } catch (InterruptedException e) {
-            logger.debug("InterruptedException thrown by thread pool. Error: " + e.getMessage());
+            logger.debug("InterruptedException thrown by thread pool. " +
+                    "Error: " + e.getMessage());
         }
     }
 }

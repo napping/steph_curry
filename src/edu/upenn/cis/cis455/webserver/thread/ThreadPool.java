@@ -24,13 +24,16 @@ public class ThreadPool {
 
     private void startWorkerThreads() {
         for (int i = 0; i < this.numWorkers; i++) {
-            this.workerThreads[i] = new Thread(new QueueWorker(this.blockingQueue));
+            this.workerThreads[i] = new Thread(
+                    new QueueWorker(this.blockingQueue));
             this.workerThreads[i].start();
         }
 
     }
 
-    public void addRequestSocket(Socket clientSocket) throws InterruptedException {
+    public void addRequestSocket(Socket clientSocket)
+            throws InterruptedException {
+
         this.blockingQueue.enqueue(clientSocket);
     }
 }

@@ -1,4 +1,4 @@
-package edu.upenn.cis.cis455.webserver.server;
+package edu.upenn.cis.cis455.webserver.context;
 
 import java.net.InetAddress;
 
@@ -23,7 +23,8 @@ public class ServerContext {
 
     public void setPort(int port) {
         if (port < 1 || port > 65535) {
-            throw new IllegalArgumentException("Invalid port number provided to ServerContext.");
+            throw new IllegalArgumentException("Invalid port number provided " +
+                    "to ServerContext.");
         }
         this.port = port;
     }
@@ -34,7 +35,8 @@ public class ServerContext {
 
     public void setNumWorkers(int num) {
         if (num > 200) {
-            throw new IllegalArgumentException("Too many workers provided to ServerContext.");
+            throw new IllegalArgumentException("Too many workers provided " +
+                    "to ServerContext.");
         }
         this.numWorkers = num;
     }

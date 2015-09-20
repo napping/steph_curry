@@ -1,11 +1,11 @@
 package edu.upenn.cis.cis455.webserver.thread;
 
 import edu.upenn.cis.cis455.webserver.blockingqueue.BlockingQueue;
+import edu.upenn.cis.cis455.webserver.context.HttpRequestContext;
+import edu.upenn.cis.cis455.webserver.context.HttpResponseContext;
 import org.apache.log4j.Logger;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.net.Socket;
 
 /**
@@ -31,22 +31,34 @@ public class QueueWorker implements Runnable {
                 // request.close();
 
             } catch (InterruptedException e) {
-                logger.debug("InterruptedException thrown by worker. Error: " + e.getMessage());
+                logger.debug("InterruptedException thrown by worker. " +
+                        "Error: " + e.getMessage());
 
             } catch (IOException e) {
-                logger.debug("IOException thrown by worker. Error: " + e.getMessage());
+                logger.debug("IOException thrown by worker. Error: " +
+                        e.getMessage());
             }
         }
     }
 
     private void handleRequest(Socket request) throws IOException {
-        BufferedReader requestReader = new BufferedReader(new InputStreamReader(request.getInputStream()));
+        BufferedReader requestReader = new BufferedReader(
+                new InputStreamReader(request.getInputStream()));
+
+        HttpRequestContext requestContext = new HttpRequestContext();
+        parseRequestIntoContext(requestReader, requestContext);
+
+        logger.debug("Done with handling request.");
+    }
+
+    private void parseRequestIntoContext(
+            BufferedReader reader, HttpRequestContext requestContext)
+            throws IOException {
 
         String line;
-        while ((line = requestReader.readLine()) != null) {
+        while ((line = reader.readLine()) != null) {
             System.out.println(line);
         }
 
-        logger.debug("Done with handling request.");
     }
 }
