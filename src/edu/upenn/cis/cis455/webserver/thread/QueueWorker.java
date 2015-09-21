@@ -8,6 +8,10 @@ import edu.upenn.cis.cis455.webserver.enumeration.HttpMethodType;
 import edu.upenn.cis.cis455.webserver.enumeration.HttpStatusCodeType;
 import edu.upenn.cis.cis455.webserver.exception.*;
 import edu.upenn.cis.cis455.webserver.utils.ContextParser;
+
+// import edu.upenn.cis.cis455.webserver.res.control;
+
+import edu.upenn.cis.cis455.webserver.utils.HtmlStrings;
 import org.apache.log4j.Logger;
 
 import java.io.*;
@@ -86,6 +90,7 @@ public class QueueWorker implements Runnable {
                     if (f == null) {
                         logger.debug("FILE WAS NULL");
                         response.setStatusCode(HttpStatusCodeType._404);
+                        request.setContentType(BasicFileType.HTML);
                         outputResponse(out, request, response, f);
                         break;
                     }
@@ -98,6 +103,7 @@ public class QueueWorker implements Runnable {
                 } catch (FileNotFoundException e) {
                     logger.debug("FILE NOT FOUND");
                     response.setStatusCode(HttpStatusCodeType._404);
+                    request.setContentType(BasicFileType.HTML);
                     outputResponse(out, request, response, f);
                     // Dangerous, passing in a null fileIn object.
                 }
@@ -203,10 +209,13 @@ public class QueueWorker implements Runnable {
         } else {
             logger.debug("Was not a 200, basically.");
             // Error
+            outputConnectionClose(out);
             if (response.getStatusCode() == HttpStatusCodeType._404) {
+                outputContentTypeLine(out, request);
+                out.println("");
                 // TODO Handle
+                out.println(HtmlStrings._404);
             } else {
-                outputConnectionClose(out);
             }
         }
     }
@@ -226,6 +235,7 @@ public class QueueWorker implements Runnable {
                                      File f)
     {
         // TODO Handle content-length?
+        // Does not seem to matter.
         out.println("");
 
         StringBuilder sb = new StringBuilder();
