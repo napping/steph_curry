@@ -6,7 +6,6 @@ import edu.upenn.cis.cis455.webserver.context.HttpResponseContext;
 import edu.upenn.cis.cis455.webserver.enumeration.BasicMimeType;
 import edu.upenn.cis.cis455.webserver.enumeration.HttpMethodType;
 import edu.upenn.cis.cis455.webserver.enumeration.HttpStatusCodeType;
-import edu.upenn.cis.cis455.webserver.enumeration.SpecialUrlType;
 import edu.upenn.cis.cis455.webserver.exception.*;
 import edu.upenn.cis.cis455.webserver.utils.ContextParser;
 import org.apache.log4j.Logger;
@@ -18,6 +17,10 @@ import static edu.upenn.cis.cis455.webserver.utils.Miscellaneous.getServerTime;
 
 /**
  * @author brishi
+ *
+ * The worker thread that drives the server.
+ * From the blocking queue, these workers dequeue request sockets and attempt
+ * to parse and response to the request.
  */
 public class QueueWorker implements Runnable {
     final Logger logger = Logger.getLogger(QueueWorker.class);
@@ -247,6 +250,7 @@ public class QueueWorker implements Runnable {
     private void outputContentLengthLine(PrintStream out,
                                          byte[] data)
     {
+        logger.debug("Content-Length: " + data.length);
         out.println("Content-Length: " + data.length);
     }
 

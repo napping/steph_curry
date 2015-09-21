@@ -37,6 +37,7 @@ public class ContextParser {
 
         HttpRequestContext context = new HttpRequestContext();
         String statusLine = reader.readLine();
+        logger.debug(statusLine);
         if (statusLine == null) {
             throw new EmptyRequestException("Request is empty");
         }
@@ -61,8 +62,9 @@ public class ContextParser {
         String[] statusSplit = statusLine.split("\\s+");
 
         String methodType = statusSplit[0];
-        if (methodType.equals("GET") || statusSplit.equals("HEAD")) {
+        if (methodType.equals("GET") || methodType.equals("HEAD")) {
             context.setHeader(HttpMethodType.valueOf(methodType));
+            logger.debug(context.getHeader());
         } else {
             throw new UnsupportedHttpMethodException("Server only accepts " +
                     "GET and HEAD requests.");
