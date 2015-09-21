@@ -2,11 +2,8 @@ package edu.upenn.cis.cis455.webserver.thread;
 
 import edu.upenn.cis.cis455.webserver.blockingqueue.BlockingQueue;
 import edu.upenn.cis.cis455.webserver.context.HttpRequestContext;
-import edu.upenn.cis.cis455.webserver.context.HttpResponseContext;
-import edu.upenn.cis.cis455.webserver.exception.InvalidHttpRequestException;
-import edu.upenn.cis.cis455.webserver.exception.InvalidHttpVersionException;
-import edu.upenn.cis.cis455.webserver.exception.UnsupportedHttpMethodException;
-import edu.upenn.cis.cis455.webserver.utils.Parser;
+import edu.upenn.cis.cis455.webserver.exception.*;
+import edu.upenn.cis.cis455.webserver.utils.ContextParser;
 import org.apache.log4j.Logger;
 
 import java.io.*;
@@ -31,8 +28,9 @@ public class QueueWorker implements Runnable {
         while (this.RUNNING) {
             try {
                 Socket request = queue.dequeue();
+
                 this.handleRequest(request);
-                // request.close();
+                request.close();
 
             } catch (InterruptedException e) {
                 logger.debug("InterruptedException thrown by worker. " +
@@ -50,13 +48,19 @@ public class QueueWorker implements Runnable {
                 new InputStreamReader(request.getInputStream()));
 
         try {
-            HttpRequestContext requestContext = Parser.parseIntoContext(
+            HttpRequestContext requestContext = ContextParser.parseIntoContext(
                     requestReader);
+
+        // TODO Handle these by setting the return response type.
         } catch (InvalidHttpVersionException e) {
             e.printStackTrace();
         } catch (InvalidHttpRequestException e) {
             e.printStackTrace();
         } catch (UnsupportedHttpMethodException e) {
+            e.printStackTrace();
+        } catch (EmptyRequestException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
             e.printStackTrace();
         }
 

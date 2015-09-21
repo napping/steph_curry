@@ -11,5 +11,6 @@ public enum BasicMimeType {
     GIF,
     PNG,
     TXT,
-    HTML
+    HTML,
+    ALL
 }
