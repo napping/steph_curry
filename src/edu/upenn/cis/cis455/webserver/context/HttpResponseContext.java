@@ -9,8 +9,8 @@ import java.io.BufferedOutputStream;
  */
 public class HttpResponseContext {
 
-    BufferedOutputStream response;
-    HttpStatusCodeType statusCode;
+    private BufferedOutputStream response;
+    private HttpStatusCodeType statusCode;
 
     // Defaults
     public HttpResponseContext () {

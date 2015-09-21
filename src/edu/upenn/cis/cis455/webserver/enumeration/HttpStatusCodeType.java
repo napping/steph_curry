@@ -7,7 +7,9 @@ package edu.upenn.cis.cis455.webserver.enumeration;
  */
 public enum HttpStatusCodeType {
     _200,
+    _304, // If-Modified-Since fail
     _400,
     _404,
+    _412,  // If-Unmodified-Since fail
     _500
 }

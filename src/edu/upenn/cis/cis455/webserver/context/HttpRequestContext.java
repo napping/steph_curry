@@ -2,6 +2,8 @@ package edu.upenn.cis.cis455.webserver.context;
 
 import edu.upenn.cis.cis455.webserver.enumeration.*;
 
+import java.util.Date;
+
 /**
  * @author brishi
  *
@@ -14,26 +16,31 @@ import edu.upenn.cis.cis455.webserver.enumeration.*;
  *
  */
 public class HttpRequestContext {
-    String request;
-    HttpMethodType header;
-    BasicMimeType contentType;
-    SpecialUrlType specialUrlType;
-    HttpVersionType httpVersionType;
-    ConnectionType connectionType;
-    String userAgent;
-    String host;
+    private String request;
+    private HttpMethodType header;
+    private BasicFileType contentType;
+    private SpecialUrlType specialUrlType;
+    private HttpVersionType httpVersionType;
+    private ConnectionType connectionType;
+    private String userAgent;
+    private String host;
+    private Date ifModifiedSince;
+
+    private Date ifUnmodifiedSince;
 
     // Defaults
     public HttpRequestContext() {
         request = "/";
         header = HttpMethodType.GET;
-        contentType = BasicMimeType.ALL;
+        contentType = BasicFileType.ALL;
         specialUrlType = SpecialUrlType.NOT_SPECIAL;
         httpVersionType = HttpVersionType.v11;
         connectionType = ConnectionType.KEEP_ALIVE;
         // Not sure if this will matter in the assignment.
         userAgent = "";
         host = "";
+        ifModifiedSince = null;
+        ifUnmodifiedSince = null;
     }
 
     /******************************** GETTERS ******************************/
@@ -45,7 +52,7 @@ public class HttpRequestContext {
         return header;
     }
 
-    public BasicMimeType getContentType() {
+    public BasicFileType getContentType() {
         return contentType;
     }
 
@@ -69,6 +76,14 @@ public class HttpRequestContext {
         return host;
     }
 
+    public Date getIfModifiedSince() {
+        return ifModifiedSince;
+    }
+
+    public Date getIfUnmodifiedSince() {
+        return ifUnmodifiedSince;
+    }
+
     /******************************** SETTERS ******************************/
     public void setRequest(String directoryString) {
         this.request = directoryString;
@@ -78,7 +93,7 @@ public class HttpRequestContext {
         this.header = header;
     }
 
-    public void setContentType(BasicMimeType contentType) {
+    public void setContentType(BasicFileType contentType) {
         this.contentType = contentType;
     }
 
@@ -100,6 +115,14 @@ public class HttpRequestContext {
 
     public void setHost(String host) {
         this.host = host;
+    }
+
+    public void setIfModifiedSince(Date ifModifiedSince) {
+        this.ifModifiedSince = ifModifiedSince;
+    }
+
+    public void setIfUnmodifiedSince(Date ifUnmodifiedSince) {
+        this.ifUnmodifiedSince = ifUnmodifiedSince;
     }
 
     /******************************** OTHER ******************************/
@@ -130,6 +153,12 @@ public class HttpRequestContext {
         sb.append("\n");
         sb.append("Host: ");
         sb.append(host);
+        sb.append("\n");
+        sb.append("If-Modified-Since: ");
+        sb.append(ifModifiedSince);
+        sb.append("\n");
+        sb.append("If-Unmodified-Since: ");
+        sb.append(ifUnmodifiedSince);
         sb.append("\n");
         sb.append("\n");
 

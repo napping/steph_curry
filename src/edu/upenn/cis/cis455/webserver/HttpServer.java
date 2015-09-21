@@ -28,7 +28,7 @@ class HttpServer {
             Thread serverThread = new Thread(new Server(context));
             serverThread.start();
 
-        } catch (Exception e) {
+        } catch (NumberFormatException e) {
             // TODO Handle
         }
     }

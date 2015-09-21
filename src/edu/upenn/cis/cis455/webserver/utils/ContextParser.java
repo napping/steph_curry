@@ -2,14 +2,16 @@ package edu.upenn.cis.cis455.webserver.utils;
 
 import edu.upenn.cis.cis455.webserver.context.HttpRequestContext;
 import edu.upenn.cis.cis455.webserver.enumeration.*;
-import edu.upenn.cis.cis455.webserver.exception.EmptyRequestException;
-import edu.upenn.cis.cis455.webserver.exception.InvalidHttpRequestException;
-import edu.upenn.cis.cis455.webserver.exception.InvalidHttpVersionException;
-import edu.upenn.cis.cis455.webserver.exception.UnsupportedHttpMethodException;
+import edu.upenn.cis.cis455.webserver.exception.*;
 import org.apache.log4j.Logger;
 
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
+import static edu.upenn.cis.cis455.webserver.utils.Miscellaneous.parseHttpDate;
 
 /**
  * @author brishi
@@ -32,7 +34,8 @@ public class ContextParser {
                     InvalidHttpVersionException,
                     InvalidHttpRequestException,
                     UnsupportedHttpMethodException,
-                    EmptyRequestException
+                    EmptyRequestException,
+                    InvalidDateException
     {
 
         HttpRequestContext context = new HttpRequestContext();
@@ -102,25 +105,25 @@ public class ContextParser {
         }
     }
 
-    private static BasicMimeType ascertainContentType(String request) {
+    private static BasicFileType ascertainContentType(String request) {
         int l = request.length();
         if (request.charAt(l - 1) == '/') {
-            return BasicMimeType.DIRECTORY;
+            return BasicFileType.DIRECTORY;
         }
 
         String[] split = request.split("\\.");
         if (split.length <= 1) {
-            return BasicMimeType.DIRECTORY;
+            return BasicFileType.ALL;
         }
         String extension = split[split.length - 1];
-        BasicMimeType type;
+        BasicFileType type;
         try {
-            type = BasicMimeType.valueOf(extension.toUpperCase());
+            type = BasicFileType.valueOf(extension.toUpperCase());
         } catch (IllegalArgumentException e) {
             logger.debug("Cannot match extension '" + extension + "' to a " +
                     "MIME type");
-            type = BasicMimeType.ALL;
-            // What error?
+            type = BasicFileType.ALL;
+            // What error? TODO
         }
 
         return type;
@@ -148,7 +151,7 @@ public class ContextParser {
 
     private static void parseRequestBody(
             HttpRequestContext context, BufferedReader reader)
-            throws IOException {
+            throws IOException, InvalidDateException {
 
         String line;
         int spaceIndex;
@@ -174,7 +177,7 @@ public class ContextParser {
 
                 case "accept":
                     // TODO content type was already set?
-                    // context.setContentType(BasicMimeType.ALL);
+                    // context.setContentType(BasicFileType.ALL);
                     break;
 
                 case "connection":
@@ -183,6 +186,14 @@ public class ContextParser {
                     } else if (value.equals("close")) {
                         context.setConnectionType(ConnectionType.CLOSE);
                     }
+                    break;
+
+                case "if-modified-since":
+                    context.setIfModifiedSince(parseHttpDate(value));
+                    break;
+
+                case "if-unmodified-since":
+                    context.setIfUnmodifiedSince(parseHttpDate(value));
                     break;
 
                 default:

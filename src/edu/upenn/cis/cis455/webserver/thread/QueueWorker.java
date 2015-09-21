@@ -3,7 +3,7 @@ package edu.upenn.cis.cis455.webserver.thread;
 import edu.upenn.cis.cis455.webserver.blockingqueue.BlockingQueue;
 import edu.upenn.cis.cis455.webserver.context.HttpRequestContext;
 import edu.upenn.cis.cis455.webserver.context.HttpResponseContext;
-import edu.upenn.cis.cis455.webserver.enumeration.BasicMimeType;
+import edu.upenn.cis.cis455.webserver.enumeration.BasicFileType;
 import edu.upenn.cis.cis455.webserver.enumeration.HttpMethodType;
 import edu.upenn.cis.cis455.webserver.enumeration.HttpStatusCodeType;
 import edu.upenn.cis.cis455.webserver.exception.*;
@@ -12,6 +12,7 @@ import org.apache.log4j.Logger;
 
 import java.io.*;
 import java.net.Socket;
+import java.util.Date;
 
 import static edu.upenn.cis.cis455.webserver.utils.Miscellaneous.getServerTime;
 
@@ -76,17 +77,28 @@ public class QueueWorker implements Runnable {
 
         PrintStream out = new PrintStream(socket.getOutputStream());
 
+        File f = null;
         switch (request.getSpecialUrlType()) {
             case NOT_SPECIAL:
-                FileInputStream fileIn = null;
                 try {
-                    fileIn = new FileInputStream(
-                            new File(this.rootDirectory + request.getRequest()));
-                    outputResponse(out, request, response, fileIn);
-                    fileIn.close();
+                    f = new File(this.rootDirectory + request.getRequest());
+
+                    if (f == null) {
+                        logger.debug("FILE WAS NULL");
+                        response.setStatusCode(HttpStatusCodeType._404);
+                        outputResponse(out, request, response, f);
+                        break;
+                    }
+
+                    handleModified(f, request, response);
+                    handleDirectory(f, request);
+
+                    outputResponse(out, request, response, f);
+
                 } catch (FileNotFoundException e) {
+                    logger.debug("FILE NOT FOUND");
                     response.setStatusCode(HttpStatusCodeType._404);
-                    outputResponse(out, request, response, fileIn);
+                    outputResponse(out, request, response, f);
                     // Dangerous, passing in a null fileIn object.
                 }
                 break;
@@ -105,6 +117,42 @@ public class QueueWorker implements Runnable {
         logger.debug("Done with handling request.");
     }
 
+    private void handleModified(File f,
+                                HttpRequestContext request,
+                                HttpResponseContext response)
+    {
+
+        Date lastModified = request.getIfModifiedSince();
+        if (lastModified != null) {
+            if (!verifyLastModified(f, lastModified)) {
+                response.setStatusCode(HttpStatusCodeType._304);
+            }
+        }
+
+        Date lastUnmodified = request.getIfUnmodifiedSince();
+        if (lastUnmodified != null) {
+            if (verifyLastUnmodified(f, lastUnmodified)) {
+                response.setStatusCode(HttpStatusCodeType._412);
+            }
+        }
+    }
+
+    private boolean verifyLastModified(File f, Date lastModified) {
+        return f.lastModified() > lastModified.getTime();
+    }
+
+    private boolean verifyLastUnmodified(File f, Date lastModified) {
+        return f.lastModified() < lastModified.getTime();
+    }
+
+    private void handleDirectory(File f,
+                                 HttpRequestContext request) {
+        if (f.isDirectory()) {
+            request.setContentType(BasicFileType.DIRECTORY);
+        }
+    }
+
+    // Not used.
     private boolean verifyValidFile(File f) {
         if (!f.exists()) {
             return false;
@@ -130,15 +178,19 @@ public class QueueWorker implements Runnable {
     private void outputResponse(PrintStream out,
                                 HttpRequestContext request,
                                 HttpResponseContext response,
-                                FileInputStream fileIn) throws IOException {
+                                File f) throws IOException
+    {
         outputResponseHeader(out, response);
 
         if (response.isSuccess()) {
             // Directory outputs text/html
             outputContentTypeLine(out, request);
-            if (request.getContentType() == BasicMimeType.DIRECTORY) {
-                // TODO
+
+            if (request.getContentType() == BasicFileType.DIRECTORY) {
+                outputDirectoryHtml(out, request, response, f);
+
             } else {
+                FileInputStream fileIn = new FileInputStream(f);
                 byte[] data = generateFileOutput(
                         out, request, response, fileIn);
 
@@ -151,8 +203,12 @@ public class QueueWorker implements Runnable {
         } else {
             logger.debug("Was not a 200, basically.");
             // Error
+            if (response.getStatusCode() == HttpStatusCodeType._404) {
+                // TODO Handle
+            } else {
+                outputConnectionClose(out);
+            }
         }
-
     }
 
     private void outputResponseHeader(PrintStream out,
@@ -164,11 +220,78 @@ public class QueueWorker implements Runnable {
 
     }
 
+    private void outputDirectoryHtml(PrintStream out,
+                                     HttpRequestContext request,
+                                     HttpResponseContext response,
+                                     File f)
+    {
+        // TODO Handle content-length?
+        out.println("");
+
+        StringBuilder sb = new StringBuilder();
+        sb.append("<html><body>");
+        sb.append("<h1>The path ");
+        sb.append("<strong>");
+        sb.append(request.getRequest());
+        sb.append("</strong>");
+        sb.append(" is a directory.  Click below to navigate:<br/>");
+        sb.append("</h1>");
+
+        if (!f.getPath().equals((new File(this.rootDirectory)).getPath())) {
+            sb.append("<h5>");
+            sb.append("<a href='");
+
+            String parentDir = ensureSlash(
+                    f.getParentFile().getPath().substring(
+                    this.rootDirectory.length() - 1));
+
+            sb.append(parentDir);
+            sb.append("'>Parent</a>");
+            sb.append("</h5>");
+        }
+
+        String requestRoot = ensureSlash(request.getRequest());
+
+        String childPath;
+        File child;
+        for (String s : f.list()) {
+            childPath = requestRoot + s;
+            child = new File(
+                    this.rootDirectory + childPath);
+            logger.debug(child.getPath());
+
+            sb.append("<h5>");
+            if (child.isDirectory()) {
+                sb.append("<a href='");
+                sb.append(childPath);
+                sb.append("'>");
+                sb.append(s);
+                sb.append("/</a>");
+
+            } else {
+                sb.append("<a href='");
+                sb.append(childPath);
+                sb.append("'>");
+                sb.append(s);
+                sb.append("</a>");
+            }
+            sb.append("</h5>");
+        }
+
+        sb.append("</body></html>");
+
+        out.println(sb.toString());
+    }
+
     private String generateHttpLine(HttpResponseContext response) {
         String line = "HTTP/1.1 ";
         switch (response.getStatusCode()) {
             case _200:
                 line += "200 OK";
+                break;
+
+            case _304:
+                line += "304 Not Modified";
                 break;
 
             case _400:
@@ -177,6 +300,10 @@ public class QueueWorker implements Runnable {
 
             case _404:
                 line += "404 Not Found";
+                break;
+
+            case _412:
+                line += "412 Precondition Failed";
                 break;
 
             case _500:
@@ -259,6 +386,20 @@ public class QueueWorker implements Runnable {
                                     byte[] data) throws IOException {
         out.println("");
         out.write(data);
+    }
+
+    private void outputConnectionClose(PrintStream out) {
+        out.println("Connection: close");
+    }
+
+    private String ensureSlash(String dir) {
+
+        if (dir.length() > 0) {
+            return dir + (dir.charAt(dir.length() - 1) != '/' ? "/" : "");
+        }
+        else {
+            return "/";
+        }
     }
 
 }
