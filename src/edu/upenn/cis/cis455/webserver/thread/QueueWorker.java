@@ -1,12 +1,12 @@
 package edu.upenn.cis.cis455.webserver.thread;
 
-import com.sun.deploy.net.HttpRequest;
 import edu.upenn.cis.cis455.webserver.blockingqueue.BlockingQueue;
 import edu.upenn.cis.cis455.webserver.context.HttpRequestContext;
 import edu.upenn.cis.cis455.webserver.context.HttpResponseContext;
 import edu.upenn.cis.cis455.webserver.enumeration.BasicMimeType;
 import edu.upenn.cis.cis455.webserver.enumeration.HttpMethodType;
 import edu.upenn.cis.cis455.webserver.enumeration.HttpStatusCodeType;
+import edu.upenn.cis.cis455.webserver.enumeration.SpecialUrlType;
 import edu.upenn.cis.cis455.webserver.exception.*;
 import edu.upenn.cis.cis455.webserver.utils.ContextParser;
 import org.apache.log4j.Logger;
@@ -25,11 +25,13 @@ public class QueueWorker implements Runnable {
     private BlockingQueue<Socket> queue;
     private boolean RUNNING;
     private ThreadPool parent;
+    private String rootDirectory;
 
     public QueueWorker(BlockingQueue queue, ThreadPool parent) {
         this.queue = queue;
         this.RUNNING = true;
         this.parent = parent;
+        this.rootDirectory = parent.getRootDirectory();
     }
 
     @Override
@@ -64,54 +66,84 @@ public class QueueWorker implements Runnable {
             request = ContextParser.parseIntoContext(
                     requestReader);
 
-            // Is there a better way..? TODO
+        // Is there a better way..? TODO
         } catch (BadRequestException e) {
             response.setStatusCode(HttpStatusCodeType._400);
         }
+
         PrintStream out = new PrintStream(socket.getOutputStream());
 
-        outputResponse(out, request, response);
+        switch (request.getSpecialUrlType()) {
+            case NOT_SPECIAL:
+                FileInputStream fileIn = null;
+                try {
+                    fileIn = new FileInputStream(
+                            new File(this.rootDirectory + request.getRequest()));
+                    outputResponse(out, request, response, fileIn);
+                    fileIn.close();
+                } catch (FileNotFoundException e) {
+                    response.setStatusCode(HttpStatusCodeType._404);
+                    outputResponse(out, request, response, fileIn);
+                    // Dangerous, passing in a null fileIn object.
+                }
+                break;
+
+            case CONTROL:
+                // TODO
+                break;
+
+            case DESTORY:
+                // TODO
+                break;
+        }
 
         requestReader.close();
+        out.close();
         logger.debug("Done with handling request.");
+    }
+
+    private boolean verifyValidFile(File f) {
+        if (!f.exists()) {
+            return false;
+        }
+
+        boolean valid = false;
+
+        try {
+            if (f.getCanonicalPath().startsWith(this.rootDirectory)) {
+                valid = true;
+            } else {
+                logger.debug("Canonical path check fails!");
+            }
+        } catch (IOException e) {
+            logger.debug("Canonical path check fails!");
+            return false;
+        }
+
+        return valid;
+
     }
 
     private void outputResponse(PrintStream out,
                                 HttpRequestContext request,
-                                HttpResponseContext response)
-    {
+                                HttpResponseContext response,
+                                FileInputStream fileIn) throws IOException {
         outputResponseHeader(out, response);
 
         if (response.isSuccess()) {
-            switch (request.getSpecialUrlType()) {
-                case NOT_SPECIAL:
-                    // Directory outputs text/html
-                    outputContentTypeLine(out, request);
-                    if (request.getContentType() == BasicMimeType.DIRECTORY) {
-                        // TODO
-                    } else {
-
-                        Byte[] data = generateFileOutput(
-                                out, request, response);
-
-                        outputContentLengthLine(out, response, data);
-                        outputResponseBody(out, response, data);
-                    }
-                    break;
-
-                case CONTROL:
-                    break;
-
-                case DESTORY:
-                    break;
-
-                default:
-                    logger.debug("Should not reach here. 2");
-                    //error
-            }
-
-            if (request.getHeader() == HttpMethodType.GET) {
+            // Directory outputs text/html
+            outputContentTypeLine(out, request);
+            if (request.getContentType() == BasicMimeType.DIRECTORY) {
+                // TODO
             } else {
+                byte[] data = generateFileOutput(
+                        out, request, response, fileIn);
+
+                outputContentLengthLine(out, data);
+                if (request.getHeader() == HttpMethodType.GET) {
+                    outputResponseBody(out, response, data);
+                }
+
             }
         } else {
             logger.debug("Was not a 200, basically.");
@@ -141,7 +173,7 @@ public class QueueWorker implements Runnable {
                 break;
 
             case _404:
-                line += "400 Not Found";
+                line += "404 Not Found";
                 break;
 
             case _500:
@@ -197,26 +229,32 @@ public class QueueWorker implements Runnable {
         out.println(line);
     }
 
-    private Byte[] generateFileOutput(PrintStream out,
+    private byte[] generateFileOutput(PrintStream out,
                                       HttpRequestContext request,
-                                      HttpResponseContext response) {
-        Byte[] byteArray = {};
-        File f = new File(
-                this.parent.getRootDirectory() + request.getRequest());
+                                      HttpResponseContext response,
+                                      FileInputStream fileIn)
+            throws IOException
+    {
+        ByteArrayOutputStream byteArrayOut = new ByteArrayOutputStream();
+        int dataByte;
+        while ((dataByte = fileIn.read()) != -1) {
+            byteArrayOut.write(dataByte);
+        }
 
-        return byteArray;
+        return byteArrayOut.toByteArray();
     }
 
     private void outputContentLengthLine(PrintStream out,
-                                         HttpResponseContext response,
-                                         Byte[] data)
+                                         byte[] data)
     {
-
+        out.println("Content-Length: " + data.length);
     }
 
-    private void outputResponseBody(OutputStream out,
+    private void outputResponseBody(PrintStream out,
                                     HttpResponseContext response,
-                                    Byte[] data) {
+                                    byte[] data) throws IOException {
+        out.println("");
+        out.write(data);
     }
 
 }
