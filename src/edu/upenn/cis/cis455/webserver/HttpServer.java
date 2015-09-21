@@ -6,8 +6,8 @@ import edu.upenn.cis.cis455.webserver.context.ServerContext;
 /**
  * @author: brishi
  *
- * Acts like a launcher for the Server class, which initiates my thread pool,
- * blocking queue, HTTP parsing, etc.
+ * Acts like a launcher for the Server class, which initiates my daemon thread,
+ * thread pool, blocking queue, HTTP parsing, etc.
  *
  */
 class HttpServer {
