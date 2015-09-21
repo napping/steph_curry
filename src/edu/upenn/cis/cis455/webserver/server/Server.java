@@ -25,7 +25,7 @@ public class Server implements Runnable {
     public Server(ServerContext context) {
         this.context = context;
 
-        this.pool = new ThreadPool(context.getNumWorkers());
+        this.pool = new ThreadPool(context.getNumWorkers(), context);
     }
 
     @Override

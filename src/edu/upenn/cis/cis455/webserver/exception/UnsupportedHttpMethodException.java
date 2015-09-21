@@ -3,7 +3,7 @@ package edu.upenn.cis.cis455.webserver.exception;
 /**
  * @author brishi
  */
-public class UnsupportedHttpMethodException extends Exception {
+public class UnsupportedHttpMethodException extends BadRequestException {
     public UnsupportedHttpMethodException() {
         super();
     }

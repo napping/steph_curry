@@ -19,6 +19,9 @@ public class ServerContext {
 
     public void setRootPath(String rootPath) {
         this.rootPath = rootPath;
+        if (rootPath.charAt(rootPath.length() - 1) != '/') {
+            this.rootPath += "/";
+        }
     }
 
     public void setPort(int port) {

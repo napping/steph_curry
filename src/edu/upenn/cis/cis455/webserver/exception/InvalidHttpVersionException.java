@@ -3,7 +3,7 @@ package edu.upenn.cis.cis455.webserver.exception;
 /**
  * @author brishi
  */
-public class InvalidHttpVersionException extends Exception {
+public class InvalidHttpVersionException extends BadRequestException {
     public InvalidHttpVersionException() {
         super();
     }

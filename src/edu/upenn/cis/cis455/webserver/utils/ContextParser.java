@@ -41,11 +41,13 @@ public class ContextParser {
             throw new EmptyRequestException("Request is empty");
         }
 
-        logger.debug("Status line: " + statusLine);
         parseStatusLine(context, statusLine);
 
         parseRequestBody(context, reader);
 
+        logger.debug("");
+        logger.debug(context.toString());
+        logger.debug("");
         return context;
     }
 
@@ -69,11 +71,15 @@ public class ContextParser {
         String request = statusSplit[1];
         if (validateRequest(request)) {
             context.setRequest(request);
-            if (request.equals("/control")) {
-                context.setSpecialUrlType(SpecialUrlType.CONTROL);
+            if (context.getHeader() == HttpMethodType.GET) {
+                if (request.equals("/control")) {
+                    context.setSpecialUrlType(SpecialUrlType.CONTROL);
 
-            } else if (request.equals("/destroy")){
-                context.setSpecialUrlType(SpecialUrlType.DESTORY);
+                } else if (request.equals("/destroy")) {
+                    context.setSpecialUrlType(SpecialUrlType.DESTORY);
+                } else {
+                    context.setContentType(ascertainContentType(request));
+                }
             }
 
         } else {
@@ -83,15 +89,39 @@ public class ContextParser {
 
         String httpVersion = statusSplit[2];
         if (httpVersion.equals("HTTP/1.1")) {
-            context.setHttpVersion(HttpVersion.v11);
+            context.setHttpVersionType(HttpVersionType.v11);
 
         } else if (httpVersion.equals("HTTP/1.0")) {
-            context.setHttpVersion(HttpVersion.v10);
+            context.setHttpVersionType(HttpVersionType.v10);
 
         } else {
             throw new InvalidHttpVersionException("Server only accepts HTTP " +
                     "Version 1.1 and 1.0.");
         }
+    }
+
+    private static BasicMimeType ascertainContentType(String request) {
+        int l = request.length();
+        if (request.charAt(l - 1) == '/') {
+            return BasicMimeType.DIRECTORY;
+        }
+
+        String[] split = request.split("\\.");
+        if (split.length <= 1) {
+            return BasicMimeType.DIRECTORY;
+        }
+        String extension = split[split.length - 1];
+        BasicMimeType type;
+        try {
+            type = BasicMimeType.valueOf(extension.toUpperCase());
+        } catch (IllegalArgumentException e) {
+            logger.debug("Cannot match extension '" + extension + "' to a " +
+                    "MIME type");
+            type = BasicMimeType.ALL;
+            // What error?
+        }
+
+        return type;
     }
 
     private static boolean validateRequest(String request) {
@@ -122,9 +152,7 @@ public class ContextParser {
         int spaceIndex;
         String headerName;
         String value;
-        while ((line = reader.readLine()) != null) {
-            logger.debug("Line:");
-            logger.debug(line);
+        while ((line = reader.readLine()).length() != 0) {
             spaceIndex = line.indexOf(":");
             if (spaceIndex < 0) {
                 continue;
@@ -143,8 +171,8 @@ public class ContextParser {
                     break;
 
                 case "accept":
-                    // TODO leaving context's mime type as the default for now
-                    context.setContentType(BasicMimeType.ALL);
+                    // TODO content type was already set?
+                    // context.setContentType(BasicMimeType.ALL);
                     break;
 
                 case "connection":

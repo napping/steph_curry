@@ -3,7 +3,7 @@ package edu.upenn.cis.cis455.webserver.exception;
 /**
  * @author brishi
  */
-public class InvalidHttpRequestException extends Exception {
+public class InvalidHttpRequestException extends BadRequestException {
     public InvalidHttpRequestException() {
         super();
     }

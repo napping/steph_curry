@@ -3,7 +3,7 @@ package edu.upenn.cis.cis455.webserver.exception;
 /**
  * @author brishi
  */
-public class EmptyRequestException extends Exception {
+public class EmptyRequestException extends BadRequestException {
 
     public EmptyRequestException() {
         super();

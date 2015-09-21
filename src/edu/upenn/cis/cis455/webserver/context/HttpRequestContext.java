@@ -18,7 +18,7 @@ public class HttpRequestContext {
     HttpMethodType header;
     BasicMimeType contentType;
     SpecialUrlType specialUrlType;
-    HttpVersion httpVersion;
+    HttpVersionType httpVersionType;
     ConnectionType connectionType;
     String userAgent;
     String host;
@@ -29,7 +29,7 @@ public class HttpRequestContext {
         header = HttpMethodType.GET;
         contentType = BasicMimeType.ALL;
         specialUrlType = SpecialUrlType.NOT_SPECIAL;
-        httpVersion = HttpVersion.v11;
+        httpVersionType = HttpVersionType.v11;
         connectionType = ConnectionType.KEEP_ALIVE;
         // Not sure if this will matter in the assignment.
         userAgent = "";
@@ -53,8 +53,8 @@ public class HttpRequestContext {
         return specialUrlType;
     }
 
-    public HttpVersion getHttpVersion() {
-        return httpVersion;
+    public HttpVersionType getHttpVersionType() {
+        return httpVersionType;
     }
 
     public ConnectionType getConnectionType() {
@@ -86,8 +86,8 @@ public class HttpRequestContext {
         this.specialUrlType = specialUrlType;
     }
 
-    public void setHttpVersion(HttpVersion httpVersion) {
-        this.httpVersion = httpVersion;
+    public void setHttpVersionType(HttpVersionType httpVersionType) {
+        this.httpVersionType = httpVersionType;
     }
 
     public void setConnectionType(ConnectionType connectionType) {
@@ -120,7 +120,7 @@ public class HttpRequestContext {
         sb.append(specialUrlType);
         sb.append("\n");
         sb.append("HTTP Version: ");
-        sb.append(httpVersion);
+        sb.append(httpVersionType);
         sb.append("\n");
         sb.append("Connection-type: ");
         sb.append(connectionType);

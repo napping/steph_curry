@@ -12,5 +12,6 @@ public enum BasicMimeType {
     PNG,
     TXT,
     HTML,
+    DIRECTORY,
     ALL
 }
