@@ -21,7 +21,6 @@ public class BlockingQueue<K> {
 
     public synchronized void enqueue(K elt) throws InterruptedException {
         while (queue.size() >= this.maxSize) {
-            // System.out.print("Q is full! ");
             this.wait();
         }
 
@@ -39,7 +38,6 @@ public class BlockingQueue<K> {
 
     public synchronized K dequeue() throws InterruptedException {
         while (queue.isEmpty()) {
-            // System.out.print("Q is empty. ");
             this.wait();
         }
 

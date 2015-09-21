@@ -29,7 +29,8 @@ class HttpServer {
             serverThread.start();
 
         } catch (NumberFormatException e) {
-            // TODO Handle
+            System.out.println("Invalid port number provided.");
+            System.exit(1);
         }
     }
 

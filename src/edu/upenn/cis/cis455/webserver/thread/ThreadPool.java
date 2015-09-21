@@ -2,8 +2,11 @@ package edu.upenn.cis.cis455.webserver.thread;
 
 import edu.upenn.cis.cis455.webserver.blockingqueue.BlockingQueue;
 import edu.upenn.cis.cis455.webserver.context.ServerContext;
+import edu.upenn.cis.cis455.webserver.server.Server;
 
+import java.io.IOException;
 import java.net.Socket;
+import java.util.Queue;
 
 /**
  * @author brishi
@@ -11,15 +14,22 @@ import java.net.Socket;
 public class ThreadPool {
 
     private BlockingQueue blockingQueue;
-    private Thread[] workers;
+    private QueueWorker[] workers;
+    private Thread[] threads;
+
+    private Server server;
     private ServerContext serverContext;
 
     private int numWorkers;
 
-    public ThreadPool(int numWorkers, ServerContext serverContext) {
+    public ThreadPool(int numWorkers, Server server) {
         this.blockingQueue = new BlockingQueue<Socket>();
-        this.workers = new Thread[numWorkers];
-        this.serverContext = serverContext;
+
+        this.workers = new QueueWorker[numWorkers];
+        this.threads = new Thread[numWorkers];
+
+        this.server = server;
+        this.serverContext = server.getContext();
 
         this.numWorkers = numWorkers;
         this.startWorkerThreads();
@@ -27,10 +37,9 @@ public class ThreadPool {
 
     private void startWorkerThreads() {
         for (int i = 0; i < this.numWorkers; i++) {
-            this.workers[i] = new Thread(
-                    new QueueWorker(this.blockingQueue, this));
-
-            this.workers[i].start();
+            this.workers[i] = new QueueWorker(this.blockingQueue, this);
+            this.threads[i] = new Thread(this.workers[i]);
+            this.threads[i].start();
         }
 
     }
@@ -43,5 +52,27 @@ public class ThreadPool {
 
     public String getRootDirectory() {
         return this.serverContext.getRootDirectory();
+    }
+
+    public void terminate() throws IOException {
+        for (int i = 0; i < this.numWorkers; i++) {
+            this.workers[i].stopRunning();
+            this.threads[i].interrupt();
+        }
+
+        this.server.shutDown();
+    }
+
+    public int getNumWorkers() {
+        return this.numWorkers;
+    }
+
+    // "...'waiting' or the URL it is currently handling..."
+    public String getStatus(int workerNum) {
+        QueueWorker worker =  this.workers[workerNum];
+        if (worker.WAITING) {
+            return "WAITING";
+        }
+        return "Processing request: " + worker.getRequestContext().getRequest();
     }
 }

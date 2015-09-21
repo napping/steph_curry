@@ -13,6 +13,7 @@ import edu.upenn.cis.cis455.webserver.utils.ContextParser;
 
 import edu.upenn.cis.cis455.webserver.utils.HtmlStrings;
 import org.apache.log4j.Logger;
+import org.apache.tools.ant.taskdefs.condition.Http;
 
 import java.io.*;
 import java.net.Socket;
@@ -30,16 +31,22 @@ import static edu.upenn.cis.cis455.webserver.utils.Miscellaneous.getServerTime;
 public class QueueWorker implements Runnable {
     final Logger logger = Logger.getLogger(QueueWorker.class);
 
+    boolean RUNNING;
+    boolean WAITING;
+
     private BlockingQueue<Socket> queue;
-    private boolean RUNNING;
     private ThreadPool parent;
     private String rootDirectory;
+
+    private HttpRequestContext request;
+    private HttpResponseContext response;
 
     public QueueWorker(BlockingQueue queue, ThreadPool parent) {
         this.queue = queue;
         this.RUNNING = true;
         this.parent = parent;
         this.rootDirectory = parent.getRootDirectory();
+        this.WAITING = true;
     }
 
     @Override
@@ -47,13 +54,12 @@ public class QueueWorker implements Runnable {
         while (this.RUNNING) {
             try {
                 Socket request = queue.dequeue();
-
                 this.handleRequest(request);
+
                 request.close();
 
             } catch (InterruptedException e) {
-                logger.debug("InterruptedException thrown by worker. " +
-                        "Error: " + e.getMessage());
+                logger.debug("Worker interrupted.");
 
             } catch (IOException e) {
                 logger.debug("IOException thrown by worker. Error: " +
@@ -62,14 +68,26 @@ public class QueueWorker implements Runnable {
         }
     }
 
+    public void stopRunning() {
+        this.RUNNING = false;
+    }
+
+    public HttpRequestContext getRequestContext() {
+        return request;
+    }
+
+    public HttpResponseContext getResponseContext() {
+        return response;
+    }
+
     private void handleRequest(Socket socket) throws IOException {
+        this.WAITING = false;
         BufferedReader requestReader = new BufferedReader(
                 new InputStreamReader(socket.getInputStream()));
 
-        HttpRequestContext request = new HttpRequestContext();
-        HttpResponseContext response = new HttpResponseContext();
+        this.request = new HttpRequestContext();
+        this.response = new HttpResponseContext();
 
-        logger.debug("HANDLING REQUEST");
         try {
             request = ContextParser.parseIntoContext(
                     requestReader);
@@ -78,6 +96,8 @@ public class QueueWorker implements Runnable {
         } catch (BadRequestException e) {
             response.setStatusCode(HttpStatusCodeType._400);
         }
+
+        logger.debug("Handling request: " + request.getRequest());
 
         PrintStream out = new PrintStream(socket.getOutputStream());
 
@@ -88,7 +108,6 @@ public class QueueWorker implements Runnable {
                     f = new File(this.rootDirectory + request.getRequest());
 
                     if (f == null) {
-                        logger.debug("FILE WAS NULL");
                         response.setStatusCode(HttpStatusCodeType._404);
                         request.setContentType(BasicFileType.HTML);
                         outputResponse(out, request, response, f);
@@ -101,7 +120,6 @@ public class QueueWorker implements Runnable {
                     outputResponse(out, request, response, f);
 
                 } catch (FileNotFoundException e) {
-                    logger.debug("FILE NOT FOUND");
                     response.setStatusCode(HttpStatusCodeType._404);
                     request.setContentType(BasicFileType.HTML);
                     outputResponse(out, request, response, f);
@@ -110,17 +128,18 @@ public class QueueWorker implements Runnable {
                 break;
 
             case CONTROL:
-                // TODO
+                outputControl(out, request, response);
                 break;
 
-            case DESTORY:
-                // TODO
+            case SHUTDOWN:
+                this.stopRunning();
+                this.parent.terminate();
                 break;
         }
 
+        logger.debug("Finished request: " + request.getRequest());
         requestReader.close();
         out.close();
-        logger.debug("Done with handling request.");
     }
 
     private void handleModified(File f,
@@ -158,29 +177,6 @@ public class QueueWorker implements Runnable {
         }
     }
 
-    // Not used.
-    private boolean verifyValidFile(File f) {
-        if (!f.exists()) {
-            return false;
-        }
-
-        boolean valid = false;
-
-        try {
-            if (f.getCanonicalPath().startsWith(this.rootDirectory)) {
-                valid = true;
-            } else {
-                logger.debug("Canonical path check fails!");
-            }
-        } catch (IOException e) {
-            logger.debug("Canonical path check fails!");
-            return false;
-        }
-
-        return valid;
-
-    }
-
     private void outputResponse(PrintStream out,
                                 HttpRequestContext request,
                                 HttpResponseContext response,
@@ -207,25 +203,20 @@ public class QueueWorker implements Runnable {
 
             }
         } else {
-            logger.debug("Was not a 200, basically.");
             // Error
             outputConnectionClose(out);
             if (response.getStatusCode() == HttpStatusCodeType._404) {
                 outputContentTypeLine(out, request);
                 out.println("");
-                // TODO Handle
                 out.println(HtmlStrings._404);
-            } else {
             }
         }
     }
 
     private void outputResponseHeader(PrintStream out,
                                       HttpResponseContext response) {
-        logger.debug(generateHttpLine(response));
-        logger.debug(generateDateLine(response));
         out.println(generateHttpLine(response));
-        out.println(generateDateLine(response));
+        out.println(generateDateLine());
 
     }
 
@@ -240,6 +231,8 @@ public class QueueWorker implements Runnable {
 
         StringBuilder sb = new StringBuilder();
         sb.append("<html><body>");
+        sb.append("<link rel='stylesheet' href='http://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css'>");
+        sb.append("<div class='container container-fluid'>");
         sb.append("<h1>The path ");
         sb.append("<strong>");
         sb.append(request.getRequest());
@@ -268,7 +261,6 @@ public class QueueWorker implements Runnable {
             childPath = requestRoot + s;
             child = new File(
                     this.rootDirectory + childPath);
-            logger.debug(child.getPath());
 
             sb.append("<h5>");
             if (child.isDirectory()) {
@@ -321,14 +313,13 @@ public class QueueWorker implements Runnable {
                 break;
 
             default:
-                logger.debug("Should not be reached: 24");
                 line += "500 Internal Server Error";
 
         }
         return line;
     }
 
-    private String generateDateLine(HttpResponseContext response) {
+    private String generateDateLine() {
         return "Date: " + getServerTime();
     }
 
@@ -361,11 +352,10 @@ public class QueueWorker implements Runnable {
                 break;
 
             default:
-                logger.debug("Unrecognized content type!" + request.toString());
+                logger.debug("Ignoring Content-Type: " + request.toString());
                 line += "text/plain";
                 // Should probably error
         }
-        logger.debug(line);
         out.println(line);
     }
 
@@ -387,7 +377,6 @@ public class QueueWorker implements Runnable {
     private void outputContentLengthLine(PrintStream out,
                                          byte[] data)
     {
-        logger.debug("Content-Length: " + data.length);
         out.println("Content-Length: " + data.length);
     }
 
@@ -410,6 +399,52 @@ public class QueueWorker implements Runnable {
         else {
             return "/";
         }
+    }
+
+    // Hardcode
+    private void outputControl(PrintStream out, HttpRequestContext request, HttpResponseContext response) {
+        int bros = this.parent.getNumWorkers();
+        StringBuilder sb = new StringBuilder();
+        sb.append("HTTP/1.1 200 OK\n");
+        sb.append(generateDateLine() + "\n");
+        sb.append("Content-Type: text/html\n");
+        sb.append("\n");
+        sb.append("<html><body>");
+        sb.append("<link rel='stylesheet' href='http://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css'>");
+        sb.append("<div class='container container-fluid'>");
+        sb.append("<div>");
+        sb.append("<h1>");
+        sb.append("Brian Shi(brishi)'s web server.");
+        sb.append("");
+        sb.append("</h1>");
+        sb.append("</div>");
+        sb.append("<div>");
+        sb.append("<h2>");
+        sb.append("Threads:");
+        sb.append("</h2>");
+        sb.append("<div>");
+        for (int i = 0; i < bros; i++) {
+            sb.append("<h4>");
+            sb.append("#");
+            sb.append(i);
+            sb.append(":");
+            sb.append(this.parent.getStatus(i));
+            sb.append("</h4>");
+        }
+        sb.append("</div>");
+        sb.append("</div>");
+        sb.append("<div>");
+        sb.append("<button type='button'>");
+        sb.append("<a href='/shutdown'>");
+        sb.append("SHUTDOWN");
+        sb.append("</a>");
+        sb.append("</button>");
+        sb.append("</div>");
+        sb.append("</div>");
+        sb.append("</body></html>");
+
+        out.print(sb.toString());
+
     }
 
 }

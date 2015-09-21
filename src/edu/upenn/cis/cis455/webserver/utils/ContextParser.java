@@ -40,7 +40,6 @@ public class ContextParser {
 
         HttpRequestContext context = new HttpRequestContext();
         String statusLine = reader.readLine();
-        logger.debug(statusLine);
         if (statusLine == null) {
             throw new EmptyRequestException("Request is empty");
         }
@@ -49,9 +48,6 @@ public class ContextParser {
 
         parseRequestBody(context, reader);
 
-        logger.debug("");
-        logger.debug(context.toString());
-        logger.debug("");
         return context;
     }
 
@@ -67,7 +63,6 @@ public class ContextParser {
         String methodType = statusSplit[0];
         if (methodType.equals("GET") || methodType.equals("HEAD")) {
             context.setHeader(HttpMethodType.valueOf(methodType));
-            logger.debug(context.getHeader());
         } else {
             throw new UnsupportedHttpMethodException("Server only accepts " +
                     "GET and HEAD requests.");
@@ -80,8 +75,8 @@ public class ContextParser {
                 if (request.equals("/control")) {
                     context.setSpecialUrlType(SpecialUrlType.CONTROL);
 
-                } else if (request.equals("/destroy")) {
-                    context.setSpecialUrlType(SpecialUrlType.DESTORY);
+                } else if (request.equals("/shutdown")) {
+                    context.setSpecialUrlType(SpecialUrlType.SHUTDOWN);
                 } else {
                     context.setContentType(ascertainContentType(request));
                 }
@@ -119,11 +114,12 @@ public class ContextParser {
         BasicFileType type;
         try {
             type = BasicFileType.valueOf(extension.toUpperCase());
+
         } catch (IllegalArgumentException e) {
             logger.debug("Cannot match extension '" + extension + "' to a " +
-                    "MIME type");
+                    "MIME type.");
             type = BasicFileType.ALL;
-            // What error? TODO
+            // Going to make this error-less. Perhaps return just text/plain
         }
 
         return type;
@@ -176,7 +172,7 @@ public class ContextParser {
                     break;
 
                 case "accept":
-                    // TODO content type was already set?
+                    // content type was already set by ending.
                     // context.setContentType(BasicFileType.ALL);
                     break;
 
@@ -197,8 +193,9 @@ public class ContextParser {
                     break;
 
                 default:
-                    logger.debug("Could not parse header: " + headerName + " " +
-                            "and value: " + value + ".");
+                    // Ignore
+                    // logger.debug("Could not parse header: " + headerName + " " +
+                            // "and value: " + value + ".");
             }
         }
     }

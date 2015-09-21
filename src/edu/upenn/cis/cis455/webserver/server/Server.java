@@ -15,8 +15,8 @@ public class Server implements Runnable {
     final Logger logger = Logger.getLogger(Server.class);
 
     private ServerSocket serverSocket;
-    private Socket clientSocket;
     private ThreadPool pool;
+    private Thread thread;
 
     private boolean RUNNING;
 
@@ -25,7 +25,22 @@ public class Server implements Runnable {
     public Server(ServerContext context) {
         this.context = context;
 
-        this.pool = new ThreadPool(context.getNumWorkers(), context);
+        this.pool = new ThreadPool(context.getNumWorkers(), this);
+    }
+
+    public ServerContext getContext() {
+        return this.context;
+    }
+
+    public ThreadPool getPool() {
+        return this.pool;
+    }
+
+    public void setThread(Thread t) {
+        this.thread = t;
+    }
+    public void shutDown() throws IOException {
+        this.RUNNING = false;
     }
 
     @Override
@@ -33,13 +48,13 @@ public class Server implements Runnable {
         logger.debug("Running server...");
         this.RUNNING = true;
 
+        Socket clientSocket;
         try {
-            serverSocket = new ServerSocket(this.context.getPort());
-            context.setAddress(serverSocket.getInetAddress());
+            this.serverSocket = new ServerSocket(this.context.getPort());
+            this.context.setAddress(serverSocket.getInetAddress());
 
-            while (RUNNING) {
+            while (this.RUNNING) {
                 clientSocket = serverSocket.accept();
-                logger.debug("Received request socket.");
 
                 this.pool.addRequestSocket(clientSocket);
             }

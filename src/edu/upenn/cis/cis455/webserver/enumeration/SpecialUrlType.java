@@ -5,6 +5,6 @@ package edu.upenn.cis.cis455.webserver.enumeration;
  */
 public enum SpecialUrlType {
     CONTROL,
-    DESTORY,
+    SHUTDOWN,
     NOT_SPECIAL  // So lame lol.
 }
