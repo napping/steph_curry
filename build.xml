@@ -30,6 +30,9 @@
                 <fileset dir="${inputlib.dir}">
                     <include name="*.jar"/>
                 </fileset>
+                <fileset dir="${shared.root}${file.separator}lib">
+                    <include name="log4j-1.2.9.jar"/>
+                </fileset>
             </classpath>
         </javac>
     </target>
@@ -85,6 +88,12 @@
         <copy todir="${web-inf.lib.dir}" overwrite="true">
             <fileset dir="${inputlib.dir}">
                 <include name="*.jar"/>
+            </fileset>
+        </copy>
+        <copy todir="${build.target.dir}${file.separator}" overwrite="true">
+            <fileset dir="${src.main.dir}${file.separator}">
+                <include name="log4j.properties"/>
+                <type type="file"/>
             </fileset>
         </copy>
         <antcall target="compilejavatest" />
