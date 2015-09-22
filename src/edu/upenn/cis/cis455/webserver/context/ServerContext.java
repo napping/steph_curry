@@ -4,6 +4,13 @@ import java.net.InetAddress;
 
 /**
  * @author brishi
+ *
+ * Following the Context Object Design pattern.
+ * Encapsulates all information about server into a general, portable, and
+ * extensible form.
+ *
+ * More information:
+ *      http://www.cs.wustl.edu/~schmidt/PDF/Context-Object-Pattern.pdf
  */
 public class ServerContext {
     private String rootPath;

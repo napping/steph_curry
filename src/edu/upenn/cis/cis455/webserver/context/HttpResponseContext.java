@@ -6,6 +6,13 @@ import java.io.BufferedOutputStream;
 
 /**
  * @author brishi
+ *
+ * Following the Context Object Design pattern.
+ * Encapsulates all information about an HTTP response into a general, portable,
+ * and extensible form.
+ *
+ * More information:
+ *      http://www.cs.wustl.edu/~schmidt/PDF/Context-Object-Pattern.pdf
  */
 public class HttpResponseContext {
 

@@ -8,7 +8,7 @@ import java.util.Date;
  * @author brishi
  *
  * Following the Context Object Design pattern.
- * Encapsulates information about an HTTP request into a general, portable,
+ * Encapsulates all information about an HTTP request into a general, portable,
  * and extensible form.
  *
  * More information:

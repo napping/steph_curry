@@ -11,6 +11,10 @@ import java.util.TimeZone;
 
 /**
  * @author brishi
+ *
+ * Miscellaneous static methods involving date and time.  Abstracting these
+ * operation away from the server code.
+ *
  */
 public class Miscellaneous {
 

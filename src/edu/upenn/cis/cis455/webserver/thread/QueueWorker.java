@@ -26,7 +26,8 @@ import static edu.upenn.cis.cis455.webserver.utils.Miscellaneous.getServerTime;
  *
  * The worker thread that drives the server.
  * From the blocking queue, these workers dequeue request sockets and attempt
- * to parse and response to the request.
+ * to parse and respond to the request.
+ *
  */
 public class QueueWorker implements Runnable {
     final Logger logger = Logger.getLogger(QueueWorker.class);

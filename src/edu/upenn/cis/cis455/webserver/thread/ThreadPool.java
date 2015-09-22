@@ -10,6 +10,11 @@ import java.util.Queue;
 
 /**
  * @author brishi
+ *
+ * My thread pool implementation.  Holds an array of worker objects, thread
+ * objects that run the workers, and a blocking queue that contains the
+ * request objects which the workers dequeue from.
+ *
  */
 public class ThreadPool {
 

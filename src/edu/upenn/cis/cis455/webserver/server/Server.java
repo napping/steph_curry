@@ -10,6 +10,9 @@ import java.net.Socket;
 
 /**
  * @author brishi
+ *
+ * My main server.  It contains the main daemon thread and thread pool.
+ *
  */
 public class Server implements Runnable {
     final Logger logger = Logger.getLogger(Server.class);
