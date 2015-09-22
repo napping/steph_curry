@@ -13,11 +13,13 @@ import edu.upenn.cis.cis455.webserver.context.ServerContext;
 class HttpServer {
 
     public static void main(String args[]) {
-        System.out.println("Starting HTTP server.");
 
         if (args.length < 2) {
             System.out.println("Brian Shi - brishi");
+            return;
         }
+
+        System.out.println("Starting HTTP server.");
 
         try {
             ServerContext context = new ServerContext();
@@ -30,7 +32,7 @@ class HttpServer {
 
         } catch (NumberFormatException e) {
             System.out.println("Invalid port number provided.");
-            System.exit(1);
+            return;
         }
     }
 
