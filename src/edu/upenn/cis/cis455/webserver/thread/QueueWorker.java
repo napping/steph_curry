@@ -133,6 +133,9 @@ public class QueueWorker implements Runnable {
                 break;
 
             case SHUTDOWN:
+                out.println("HTTP/1.1 200 OK");
+                out.println(generateDateLine());
+                outputConnectionClose(out);
                 this.stopRunning();
                 this.parent.terminate();
                 break;
@@ -157,7 +160,7 @@ public class QueueWorker implements Runnable {
 
         Date lastUnmodified = request.getIfUnmodifiedSince();
         if (lastUnmodified != null) {
-            if (verifyLastUnmodified(f, lastUnmodified)) {
+            if (!verifyLastUnmodified(f, lastUnmodified)) {
                 response.setStatusCode(HttpStatusCodeType._412);
             }
         }
@@ -353,7 +356,6 @@ public class QueueWorker implements Runnable {
                 break;
 
             default:
-                logger.debug("Ignoring Content-Type: " + request.toString());
                 line += "text/plain";
                 // Should probably error
         }

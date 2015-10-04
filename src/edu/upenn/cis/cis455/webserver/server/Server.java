@@ -14,7 +14,9 @@ import java.net.Socket;
  * My main server.  It contains the main daemon thread and thread pool.
  *
  */
+
 public class Server implements Runnable {
+
     final Logger logger = Logger.getLogger(Server.class);
 
     private ServerSocket serverSocket;
@@ -44,6 +46,8 @@ public class Server implements Runnable {
     }
     public void shutDown() throws IOException {
         this.RUNNING = false;
+        this.thread.interrupt();
+        serverSocket.close();
     }
 
     @Override
@@ -62,7 +66,6 @@ public class Server implements Runnable {
                 this.pool.addRequestSocket(clientSocket);
             }
 
-            serverSocket.close();
 
         } catch (IOException e) {
             logger.debug("IOException thrown by sockets. " +
