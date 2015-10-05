@@ -18,13 +18,23 @@ import java.util.Map;
  */
 public class MyServletRequest implements HttpServletRequest {
 
+    private String characterEncoding;
+    private String contentType;
+
+    public MyServletRequest() {
+        this.characterEncoding = "ISO-8859-1";
+        this.contentType = "text/html";
+    }
+
     @Override
     public String getAuthType() {
-        return null;
+        // should always return BASIC AUTH ("BASIC")
+        return BASIC_AUTH;
     }
 
     @Override
     public Cookie[] getCookies() {
+
         return new Cookie[0];
     }
 
@@ -60,11 +70,14 @@ public class MyServletRequest implements HttpServletRequest {
 
     @Override
     public String getPathInfo() {
+        // should always return the remainder of the URL request after the
+        // portion matched by the url-pattern in web-xml. It starts with a "/".
         return null;
     }
 
     @Override
     public String getPathTranslated() {
+        // Does not need to be implemented.
         return null;
     }
 
@@ -75,6 +88,8 @@ public class MyServletRequest implements HttpServletRequest {
 
     @Override
     public String getQueryString() {
+        // should return the HTTP GET query string, i.e. the portion after the
+        // "?" when the GET form is posted.
         return null;
     }
 
@@ -85,11 +100,13 @@ public class MyServletRequest implements HttpServletRequest {
 
     @Override
     public boolean isUserInRole(String s) {
+        // Does not need to be implemented.
         return false;
     }
 
     @Override
     public Principal getUserPrincipal() {
+        // Does not need to be implemented.
         return null;
     }
 
@@ -138,6 +155,7 @@ public class MyServletRequest implements HttpServletRequest {
         return false;
     }
 
+    @Deprecated
     @Override
     public boolean isRequestedSessionIdFromUrl() {
         return false;
@@ -155,12 +173,13 @@ public class MyServletRequest implements HttpServletRequest {
 
     @Override
     public String getCharacterEncoding() {
-        return null;
+        // should return "ISO-8859-1" by default or the results of setChara...
+        return this.characterEncoding;
     }
 
     @Override
     public void setCharacterEncoding(String s) throws UnsupportedEncodingException {
-
+        this.characterEncoding = s;
     }
 
     @Override
@@ -170,11 +189,12 @@ public class MyServletRequest implements HttpServletRequest {
 
     @Override
     public String getContentType() {
-        return null;
+        return this.contentType;
     }
 
     @Override
     public ServletInputStream getInputStream() throws IOException {
+        // Does not need to be implemented.
         return null;
     }
 
@@ -205,7 +225,7 @@ public class MyServletRequest implements HttpServletRequest {
 
     @Override
     public String getScheme() {
-        return null;
+        return "http";
     }
 
     @Override
@@ -250,6 +270,7 @@ public class MyServletRequest implements HttpServletRequest {
 
     @Override
     public Enumeration getLocales() {
+        // Does not need to be implemented.
         return null;
     }
 
@@ -260,6 +281,7 @@ public class MyServletRequest implements HttpServletRequest {
 
     @Override
     public RequestDispatcher getRequestDispatcher(String s) {
+        // Does not need to be implemented.
         return null;
     }
 
