@@ -1,1 +1,33 @@
-Concurrent HTTP web server written in Java.
+-Full name:  Brian Shi
+-SEAS login: brishi
+-
+-Which features did you implement?
+-  (list features, or write 'Entire assignment')
+-  --> Entire Milestone 1.
+-
+-Did you complete any extra-credit tasks? If so, which ones?
+-  (list extra-credit tasks)
+-  --> Not this time.
+-
+-Any special instructions for building and running your solution?
+-  (include detailed instructions, or write 'None')
+-
+-  --> Like others, my server did not run with the command suggested in the writeup.  After running ant build, I needed to add the logger jar file to the class path manually.
+-    This is the template of a command that runs my server:
+-        java -cp bin:lib/log4j-1.2.9.jar edu.upenn.cis.cis455.webserver.HttpServer PORT ROOTDIR
+-    For example (from the hw1/ directory):
+-        java -cp bin:lib/log4j-1.2.9.jar edu.upenn.cis.cis455.webserver.HttpServer 8080 ./www/
+-
+-
+-Did you personally write _all_ the code you are submitting
+-(other than code from the course web page)?
+-  [x] Yes
+-  [ ] No
+-
+-Did you copy any code from the Internet, or from classmates?
+-  [ ] Yes
+-  [x] No
+-
+-Did you collaborate with anyone on this assignment?
+-  [ ] Yes
+-  [x] No

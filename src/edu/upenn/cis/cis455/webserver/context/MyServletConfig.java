@@ -48,4 +48,8 @@ public class MyServletConfig implements ServletConfig {
     public Enumeration getInitParameterNames() {
         return Collections.enumeration(initParameters.keySet());
     }
+
+    public void setInitParam(String name, String value) {
+        initParameters.put(name, value);
+    }
 }
